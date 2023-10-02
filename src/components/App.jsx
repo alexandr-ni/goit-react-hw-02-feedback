@@ -23,20 +23,12 @@ export class App extends Component {
     bad: 0,
   };
 
-  clickButton = click => {
-    if (click.target.textContent === 'Good') {
-      this.setState(prevState => ({
-        good: prevState.good + 1,
-      }));
-    } else if (click.target.textContent === 'Neutral') {
-      this.setState(prevState => ({
-        neutral: prevState.neutral + 1,
-      }));
-    } else if (click.target.textContent === 'Bad') {
-      this.setState(prevState => ({
-        bad: prevState.bad + 1,
-      }));
-    }
+  clickButton = name => {
+    this.setState(prevState => {
+      return {
+        [name]: prevState[name] + 1,
+      };
+    });
   };
 
   render() {
