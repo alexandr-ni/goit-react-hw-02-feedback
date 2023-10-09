@@ -1,64 +1,79 @@
-import { Fragment } from 'react';
-import { FeedbackOptions } from './FeedbackOptions/FeedbackOptions';
-import { Statistic } from './Statistic/Statistic';
 import { Component } from 'react';
-import { Section } from './Section/Section';
-import { Notification } from './Notification/Notification';
-
-function countTotalFeedback(state) {
-  return state.good + state.neutral + state.bad;
-}
-
-function countPositiveFeedbackPercentage(good, total) {
-  if (total !== 0) {
-    return Math.round((good * 100) / total) + '%';
-  }
-  return;
-}
+import { nanoid } from 'nanoid';
+import { ContactForm } from './ContactForm/ContactForm';
+import { Filter } from './Filter/Filter';
+import { ContactList } from './ContactList/ContactList';
+import { Layout } from './Layout';
 
 export class App extends Component {
   state = {
-    good: 0,
-    neutral: 0,
-    bad: 0,
+    contacts: [
+      { id: 'id-1', name: 'Rosie Simpson', number: '459-12-56' },
+      { id: 'id-2', name: 'Hermione Kline', number: '443-89-12' },
+      { id: 'id-3', name: 'Eden Clements', number: '645-17-79' },
+      { id: 'id-4', name: 'Annie Copeland', number: '227-91-26' },
+    ],
+    filter: '',
   };
 
-  clickButton = name => {
-    this.setState(prevState => {
-      return {
-        [name]: prevState[name] + 1,
-      };
+  addContact = newContact => {
+    function checkContact(contacts, newcontact) {
+      for (const contact of contacts) {
+        if (contact.name.toLowerCase() === newcontact.name.toLowerCase()) {
+          alert(`${newcontact.name} is already in contacts.`);
+          return true;
+        }
+      }
+    }
+
+    if (checkContact(this.state.contacts, newContact) === undefined) {
+      this.setState(prevState => ({
+        contacts: [
+          ...prevState.contacts,
+          {
+            id: nanoid(),
+            ...newContact,
+          },
+        ],
+      }));
+    }
+    return;
+  };
+
+  changeFilter = newFilter => {
+    this.setState({
+      filter: newFilter,
     });
   };
 
+  getVisibleContacts = () => {
+    return this.state.contacts.filter(contact =>
+      contact.name.toLowerCase().includes(this.state.filter.toLowerCase())
+    );
+  };
+
+  deleteContact = contactId => {
+    this.setState(prevState => ({
+      contacts: prevState.contacts.filter(contact => contact.id !== contactId),
+    }));
+  };
+
   render() {
-    const emote = this.state;
+    const visibleContacts = this.getVisibleContacts();
 
     return (
-      <Fragment>
-        <Section title="Please leave feedback">
-          <FeedbackOptions
-            options={Object.keys(this.state)}
-            onLeaveFeedback={this.clickButton}
-          />
-        </Section>
-        <Section title="Statistics">
-          {countTotalFeedback(emote) === 0 ? (
-            <Notification message="There is no feedback" />
-          ) : (
-            <Statistic
-              good={emote.good}
-              neutral={emote.neutral}
-              bad={emote.bad}
-              total={countTotalFeedback(emote)}
-              positivePercentage={countPositiveFeedbackPercentage(
-                emote.good,
-                countTotalFeedback(emote)
-              )}
-            />
-          )}
-        </Section>
-      </Fragment>
+      <Layout>
+        <h1>Phonebook</h1>
+
+        <ContactForm onAdd={this.addContact} />
+
+        <h2>Contacts</h2>
+        <Filter
+          filterData={this.state.filter}
+          onChangeFilter={this.changeFilter}
+        />
+        <ContactList contacts={visibleContacts} onDelete={this.deleteContact} />
+      </Layout>
     );
   }
 }
